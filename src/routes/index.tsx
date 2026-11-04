@@ -293,7 +293,11 @@ function Briefing({ phase, onStart, back }: { phase: Phase; onStart: () => void;
 }
 
 function Play({ run, setRun, onFinish }: { run: Run; setRun: (r: Run) => void; onFinish: (r: Run) => void }) {
-  const q = run.phase.questions[run.idx]!;
+  const raw = run.phase.questions[run.idx]!;
+  const q = useMemo(() => {
+    const order = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
+    return { ...raw, options: order.map((i) => raw.options[i]!), correct: order.indexOf(raw.correct) };
+  }, [raw]);
   const [time, setTime] = useState(QUESTION_TIME);
   const [picked, setPicked] = useState<number | null>(null);
   const [gain, setGain] = useState(0);
