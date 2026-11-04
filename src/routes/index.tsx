@@ -47,6 +47,7 @@ function Game() {
     setName(localStorage.getItem("wm_name") ?? ""); setMute(isMuted());
   };
   useEffect(refresh, []);
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); }, [screen, run?.idx]);
 
   const go = (s: Screen) => { sfx.click(); setScreen(s); };
   const toggleMute = () => { setMuted(!muted); setMute(!muted); if (muted) sfx.click(); };
