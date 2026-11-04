@@ -259,6 +259,7 @@ function Menu({ best, xp, name, muted, onMute, topRank, setName, go }: { best: n
             className="w-full rounded-lg border border-input bg-card/80 px-4 py-3 text-center outline-none backdrop-blur focus:border-primary focus:glow" />
           <div className="mt-3 flex flex-col gap-3">
             <BtnPrimary onClick={() => go("map")} className="py-4 text-lg"><PlayIcon className="h-5 w-5" />INICIAR SIMULAÇÃO</BtnPrimary>
+            <p className="-mt-1 text-xs text-muted-foreground">Modo demonstração · individual, neste dispositivo, sem cadastro</p>
             <div className="grid grid-cols-2 gap-3">
               <BtnGhost onClick={() => go("howto")} className="px-3 text-sm"><HelpCircle className="h-4 w-4" />COMO JOGAR</BtnGhost>
               <BtnGhost onClick={() => go("ranking")} className="px-3 text-sm"><Trophy className="h-4 w-4" />RANKING</BtnGhost>
