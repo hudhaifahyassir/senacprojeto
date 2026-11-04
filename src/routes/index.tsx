@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
-  Activity, BookOpen, Play, HelpCircle, Trophy, Heart, Flame, Timer, Lock, CheckCircle2,
+  Activity, BookOpen, Play as PlayIcon, HelpCircle, Trophy, Heart, Flame, Timer, Lock, CheckCircle2,
   XCircle, ArrowLeft, ArrowRight, Medal as MedalIcon, Stethoscope, RotateCcw, Star, Zap, Target, Crown,
 } from "lucide-react";
 import { PHASES, SCIENCE, type Phase } from "@/game/data";
@@ -150,7 +150,7 @@ function Menu({ best, xp, name, setName, go }: { best: number; xp: number; name:
         className="mt-8 w-full max-w-sm rounded-lg border border-input bg-card px-4 py-3 text-center outline-none focus:border-primary" />
 
       <div className="mt-4 flex w-full max-w-sm flex-col gap-3">
-        <BtnPrimary onClick={() => go("map")}><Play className="h-5 w-5" />INICIAR SIMULAÇÃO</BtnPrimary>
+        <BtnPrimary onClick={() => go("map")}><PlayIcon className="h-5 w-5" />INICIAR SIMULAÇÃO</BtnPrimary>
         <BtnGhost onClick={() => go("howto")}><HelpCircle className="h-5 w-5" />COMO JOGAR</BtnGhost>
         <BtnGhost onClick={() => go("science")}><BookOpen className="h-5 w-5" />CONTEÚDO CIENTÍFICO</BtnGhost>
         <BtnGhost onClick={() => go("ranking")}><Trophy className="h-5 w-5" />RANKING</BtnGhost>
