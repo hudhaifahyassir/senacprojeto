@@ -6,7 +6,7 @@ import {
   Volume2, VolumeX, ShieldAlert, HeartPulse,
 } from "lucide-react";
 import heroImg from "@/assets/fase6.jpg";
-import { PHASES, SCIENCE, type Phase } from "@/game/data";
+import { PHASES, SCIENCE, TOTAL_QUESTIONS, type Phase, type CaseInfo } from "@/game/data";
 import {
   scoreAnswer, medalFor, levelFromXp, store, MAX_LIVES, QUESTION_TIME, CORRECT_POINTS, WRONG_PENALTY,
   COMBO_BONUS, type Medal, type Progress, type RankEntry,
@@ -251,7 +251,7 @@ function Menu({ best, xp, name, muted, onMute, topRank, setName, go }: { best: n
         <div className="mt-6 grid w-full max-w-xl grid-cols-3 gap-2 animate-rise" style={{ animationDelay: ".45s" }}>
           <Vital label="RECORDE" value={String(best)} unit="pts" tone="text-gold" />
           <Vital label="NÍVEL" value={String(levelFromXp(xp))} unit={`${xp} XP`} tone="text-primary" />
-          <Vital label="DESAFIOS" value="32" unit="casos" tone="text-success" />
+          <Vital label="DESAFIOS" value={String(TOTAL_QUESTIONS)} unit="casos" tone="text-success" />
         </div>
 
         <div className="mt-6 w-full max-w-sm animate-rise" style={{ animationDelay: ".6s" }}>
@@ -278,7 +278,7 @@ function Menu({ best, xp, name, muted, onMute, topRank, setName, go }: { best: n
 
 function HowTo({ back }: { back: () => void }) {
   const items = [
-    [<Target key="a" />, "Seis fases", "Complete cada fase para desbloquear a próxima. A Fase 6 é o desafio final."],
+    [<Target key="a" />, `${PHASES.length} fases`, "Complete cada fase para desbloquear a próxima. A Fase 6 é o desafio final e a Fase 7 traz casos clínicos avançados."],
     [<CheckCircle2 key="b" />, `+${CORRECT_POINTS} pontos`, "Por resposta correta, com explicação científica imediata."],
     [<XCircle key="c" />, `−${WRONG_PENALTY} pontos`, "Por resposta incorreta ou tempo esgotado. Você também perde uma vida."],
     [<Heart key="d" />, `${MAX_LIVES} vidas por fase`, "Se as vidas acabarem, a fase é reprovada e precisa ser refeita."],
@@ -346,7 +346,7 @@ function PhaseMap({ progress, onPick, back }: { progress: Progress; onPick: (p: 
     <div>
       <Header kicker="CENTRO DE OPERAÇÕES" title="Mapa de fases" back={back} />
       <div className="monitor mb-6 p-4">
-        <div className="mb-3 flex justify-between text-sm"><span className="font-display tracking-widest text-primary">PROGRESSO DA ACADEMIA</span><span className="tabular-nums text-muted-foreground">{done}/6 medalhas · {progress.unlocked}/6 liberadas</span></div>
+        <div className="mb-3 flex justify-between text-sm"><span className="font-display tracking-widest text-primary">PROGRESSO DA ACADEMIA</span><span className="tabular-nums text-muted-foreground">{done}/{PHASES.length} medalhas · {progress.unlocked}/{PHASES.length} liberadas</span></div>
         <div className="flex items-center gap-1">
           {PHASES.map((p) => {
             const m = progress.medals[p.id];
@@ -402,7 +402,7 @@ function Briefing({ phase, onStart, back }: { phase: Phase; onStart: () => void;
           <div className="mt-6 flex flex-wrap gap-2 text-sm">
             <Chip icon={<Zap className="h-4 w-4 text-primary" />} label={`${phase.questions.length} desafios`} />
             <Chip icon={<Heart className="h-4 w-4 text-destructive" />} label={`${MAX_LIVES} vidas`} />
-            <Chip icon={<Timer className="h-4 w-4 text-primary" />} label={`${QUESTION_TIME}s cada`} />
+            <Chip icon={<Timer className="h-4 w-4 text-primary" />} label={`${phase.time ?? QUESTION_TIME}s cada`} />
           </div>
           <BtnPrimary onClick={onStart} className="mt-8 w-full py-4">INICIAR FASE<ArrowRight className="h-5 w-5" /></BtnPrimary>
         </div>
@@ -430,11 +430,17 @@ function PhaseTransition({ phase }: { phase: Phase }) {
 
 function Play({ run, setRun, onFinish }: { run: Run; setRun: (r: Run) => void; onFinish: (r: Run) => void }) {
   const raw = run.phase.questions[run.idx]!;
+  const limit = run.phase.time ?? QUESTION_TIME;
   const q = useMemo(() => {
     const order = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
-    return { ...raw, options: order.map((i) => raw.options[i]!), correct: order.indexOf(raw.correct) };
+    return {
+      ...raw,
+      options: order.map((i) => raw.options[i]!),
+      whyWrong: raw.whyWrong ? order.map((i) => raw.whyWrong![i] ?? "") : undefined,
+      correct: order.indexOf(raw.correct),
+    };
   }, [raw]);
-  const [time, setTime] = useState(QUESTION_TIME);
+  const [time, setTime] = useState(limit);
   const [picked, setPicked] = useState<number | null>(null);
   const [gain, setGain] = useState({ points: 0, xp: 0 });
   const answered = picked !== null;
@@ -503,10 +509,11 @@ function Play({ run, setRun, onFinish }: { run: Run; setRun: (r: Run) => void; o
             <div className={`relative grid h-12 w-12 shrink-0 place-items-center rounded-full border-2 font-display text-lg font-bold tabular-nums ${lowTime ? "border-destructive text-destructive animate-blink" : "border-primary text-primary"}`}>
               {time}
             </div>
-            <div className="flex-1"><Bar value={(time / QUESTION_TIME) * 100} tone={lowTime ? "destructive" : "primary"} /></div>
+            <div className="flex-1"><Bar value={(time / limit) * 100} tone={lowTime ? "destructive" : "primary"} /></div>
             {run.combo > 1 && <span key={run.combo} className="rounded-full bg-warning/15 px-3 py-1 font-display text-sm font-bold text-warning animate-pop">COMBO x{run.combo}</span>}
           </div>
           <p className="font-display text-xs tracking-[0.3em] text-muted-foreground">DESAFIO {String(run.idx + 1).padStart(2, "0")}</p>
+          {q.caseInfo && <CaseCard info={q.caseInfo} />}
           <h3 className="mt-1 font-display text-xl font-semibold leading-snug sm:text-2xl">{q.q}</h3>
           <div className="mt-6 grid gap-3">
             {q.options.map((o, i) => {
@@ -537,6 +544,17 @@ function Play({ run, setRun, onFinish }: { run: Run; setRun: (r: Run) => void; o
               </p>
               <p className="mt-1 text-sm text-muted-foreground">Resposta correta: <strong className="text-foreground">{letters[q.correct]}</strong></p>
               <p className="mt-3 leading-relaxed"><span className="font-semibold text-primary">Explicação científica: </span>{q.explanation}</p>
+              {q.whyWrong && (
+                <div className="mt-4 space-y-2">
+                  <p className="font-display text-xs tracking-[0.25em] text-muted-foreground">POR QUE AS OUTRAS ALTERNATIVAS ESTÃO INADEQUADAS</p>
+                  {q.options.map((o, i) => i === q.correct ? null : (
+                    <div key={i} className="rounded-md border border-border bg-background/40 p-3 text-sm">
+                      <p className="font-semibold"><span className="mr-2 text-destructive">{letters[i]}</span>{o}</p>
+                      <p className="mt-1 text-muted-foreground">{q.whyWrong![i]}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
               <BtnPrimary onClick={next} className="mt-5 w-full sm:w-auto">
                 {run.lives <= 0 ? "VER RESULTADO" : run.idx + 1 >= run.phase.questions.length ? "CONCLUIR FASE" : "PRÓXIMO DESAFIO"}<ArrowRight className="h-5 w-5" />
               </BtnPrimary>
@@ -559,6 +577,26 @@ function Play({ run, setRun, onFinish }: { run: Run; setRun: (r: Run) => void; o
           </div>
         </aside>
       </div>
+    </div>
+  );
+}
+
+function CaseCard({ info }: { info: CaseInfo }) {
+  const rows: [string, string][] = [
+    ["Contexto clínico", info.context], ["Localização", info.location], ["Leito", info.bed],
+    ["Exsudato", info.exudate], ["Bordas", info.edges], ["Sinais locais e sistêmicos", info.signs],
+  ];
+  return (
+    <div className="monitor mb-5 p-4">
+      <p className="flex items-center gap-2 font-display text-sm font-bold text-primary"><Stethoscope className="h-4 w-4" />{info.patient}</p>
+      <dl className="mt-3 grid gap-x-5 gap-y-2.5 sm:grid-cols-2">
+        {rows.map(([k, v]) => (
+          <div key={k} className={k === "Contexto clínico" || k.startsWith("Sinais") ? "sm:col-span-2" : ""}>
+            <dt className="text-[10px] uppercase tracking-widest text-muted-foreground">{k}</dt>
+            <dd className="text-sm leading-relaxed">{v}</dd>
+          </div>
+        ))}
+      </dl>
     </div>
   );
 }
