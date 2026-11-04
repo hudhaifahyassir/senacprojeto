@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Activity, BookOpen, Play as PlayIcon, HelpCircle, Trophy, Heart, Flame, Timer, Lock, CheckCircle2,
   XCircle, ArrowLeft, ArrowRight, Medal as MedalIcon, Stethoscope, RotateCcw, Star, Zap, Target, Crown,
@@ -28,7 +28,7 @@ export const Route = createFileRoute("/")({
 });
 
 type Screen = "menu" | "howto" | "science" | "map" | "briefing" | "play" | "result" | "ranking";
-type Run = { phase: Phase; idx: number; score: number; xp: number; lives: number; combo: number; maxCombo: number; correct: number; failed: boolean };
+type Run = { phase: Phase; idx: number; score: number; xp: number; lives: number; combo: number; maxCombo: number; correct: number; failed: boolean; results: boolean[] };
 
 function Game() {
   const [screen, setScreen] = useState<Screen>("menu");
@@ -53,7 +53,7 @@ function Game() {
 
   const startPhase = (p: Phase) => {
     sfx.click();
-    setRun({ phase: p, idx: 0, score: 0, xp: 0, lives: MAX_LIVES, combo: 0, maxCombo: 0, correct: 0, failed: false });
+    setRun({ phase: p, idx: 0, score: 0, xp: 0, lives: MAX_LIVES, combo: 0, maxCombo: 0, correct: 0, failed: false, results: [] });
     setScreen("briefing");
   };
   const beginPlay = () => {
@@ -436,7 +436,6 @@ function Play({ run, setRun, onFinish }: { run: Run; setRun: (r: Run) => void; o
   const [time, setTime] = useState(QUESTION_TIME);
   const [picked, setPicked] = useState<number | null>(null);
   const [gain, setGain] = useState({ points: 0, xp: 0 });
-  const results = useRef<boolean[]>([]);
   const answered = picked !== null;
 
   useEffect(() => {
@@ -455,11 +454,10 @@ function Play({ run, setRun, onFinish }: { run: Run; setRun: (r: Run) => void; o
     if (ok) sfx.correct(); else sfx.wrong();
     setPicked(i);
     setGain({ points: s.points, xp: s.xp });
-    results.current[run.idx] = ok;
     setRun({
       ...run, score: run.score + s.points, xp: run.xp + s.xp, combo: s.combo,
       maxCombo: Math.max(run.maxCombo, s.combo), correct: run.correct + (ok ? 1 : 0),
-      lives: ok ? run.lives : run.lives - 1,
+      lives: ok ? run.lives : run.lives - 1, results: [...run.results, ok],
     });
   }
 
@@ -472,7 +470,6 @@ function Play({ run, setRun, onFinish }: { run: Run; setRun: (r: Run) => void; o
 
   const isCorrect = picked === q.correct;
   const letters = "ABCD";
-  const pastResults = useResultsHistory(run, results.current);
   const lowTime = time <= 10 && !answered;
   return (
     <div className="relative">
@@ -481,7 +478,7 @@ function Play({ run, setRun, onFinish }: { run: Run; setRun: (r: Run) => void; o
       <div className="monitor mb-5 grid gap-4 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
         <div>
           <div className="mb-2 flex justify-between gap-2 text-sm"><span className="truncate font-display font-semibold text-primary">FASE {run.phase.id} · {run.phase.title}</span><span className="shrink-0 tabular-nums text-muted-foreground">{run.idx + 1}/{run.phase.questions.length}</span></div>
-          <SegmentBar results={pastResults} total={run.phase.questions.length} current={run.idx} />
+          <SegmentBar results={run.results} total={run.phase.questions.length} current={run.idx} />
         </div>
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <span className="flex gap-0.5" aria-label={`${run.lives} vidas`}>
@@ -563,17 +560,6 @@ function Play({ run, setRun, onFinish }: { run: Run; setRun: (r: Run) => void; o
       </div>
     </div>
   );
-}
-
-// Keeps per-question results across remounts of Play (it remounts per question via parent key).
-const history = new Map<string, boolean[]>();
-function useResultsHistory(run: Run, current: boolean[]) {
-  const key = `${run.phase.id}`;
-  if (run.idx === 0 && !current.length && run.correct === 0 && run.lives === MAX_LIVES) history.set(key, []);
-  const h = history.get(key) ?? [];
-  current.forEach((v, i) => { if (v !== undefined) h[i] = v; });
-  history.set(key, h);
-  return h;
 }
 
 /* ---------- Results ---------- */
