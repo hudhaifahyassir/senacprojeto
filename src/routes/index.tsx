@@ -17,7 +17,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Wound Master — Academia de Tratamento de Feridas" },
-      { name: "description", content: "Simulador educacional com 6 fases e 32 desafios sobre avaliação e tratamento de feridas." },
+      { name: "description", content: "Simulador educacional com 7 fases e 44 desafios sobre avaliação e tratamento de feridas." },
       { property: "og:title", content: "Wound Master — Academia de Tratamento de Feridas" },
       { property: "og:description", content: "Jogo educacional de tratamento de feridas para o curso Técnico de Enfermagem." },
       { property: "og:type", content: "website" },
