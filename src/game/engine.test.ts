@@ -14,8 +14,17 @@ describe("engine", () => {
     expect(medalFor(5, 5)).toBe("ouro");
     expect(medalFor(1, 5)).toBe(null);
   });
-  it("has at least 20 challenges in 6 phases", () => {
-    expect(PHASES.length).toBe(6);
+  it("advanced phase has 12 complete cases with rationale for every wrong option", () => {
+    const adv = PHASES[6]!;
+    expect(adv.questions.length).toBe(12);
+    for (const q of adv.questions) {
+      expect(q.caseInfo).toBeDefined();
+      expect(q.options.length).toBe(4);
+      q.options.forEach((_, i) => { if (i !== q.correct) expect(q.whyWrong?.[i]?.length).toBeGreaterThan(20); });
+    }
+  });
+  it("has at least 20 challenges in 7 phases", () => {
+    expect(PHASES.length).toBe(7);
     expect(TOTAL_QUESTIONS).toBeGreaterThanOrEqual(20);
   });
 });

@@ -4,8 +4,10 @@ import f3 from "@/assets/fase3.jpg";
 import f4 from "@/assets/fase4.jpg";
 import f5 from "@/assets/fase5.jpg";
 import f6 from "@/assets/fase6.jpg";
+import { ADVANCED_PHASE } from "./advanced";
 
-export type Question = { q: string; options: string[]; correct: number; explanation: string };
+export type CaseInfo = { patient: string; context: string; location: string; bed: string; exudate: string; edges: string; signs: string };
+export type Question = { q: string; options: string[]; correct: number; explanation: string; caseInfo?: CaseInfo; whyWrong?: string[] };
 export type Phase = {
   id: number;
   title: string;
@@ -13,6 +15,7 @@ export type Phase = {
   objective: string;
   caseText: string;
   image: string;
+  time?: number;
   questions: Question[];
 };
 
@@ -385,6 +388,8 @@ export const PHASES: Phase[] = [
     ],
   },
 ];
+
+PHASES.push(ADVANCED_PHASE);
 
 export const TOTAL_QUESTIONS = PHASES.reduce((s, p) => s + p.questions.length, 0);
 
