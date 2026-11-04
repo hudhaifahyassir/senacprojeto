@@ -87,7 +87,7 @@ function Game() {
           {screen === "play" && run && <Play run={run} setRun={setRun} onFinish={finishPhase} />}
           {screen === "result" && run && (
             <Result run={run} onMap={() => setScreen("map")} onRetry={() => startPhase(run.phase)}
-              onNext={run.failed || run.phase.id === PHASES.length ? undefined : () => startPhase(PHASES[run.phase.id])}
+              onNext={run.failed || run.phase.id === PHASES.length ? undefined : () => startPhase(PHASES[run.phase.id]!)}
               onRanking={() => setScreen("ranking")} onRestart={() => { setSession(0); setScreen("menu"); }} />
           )}
         </div>
@@ -211,8 +211,8 @@ function Science({ back }: { back: () => void }) {
         </div>
         <article key={open} className="panel animate-rise p-6 sm:p-8">
           <p className="font-display text-xs tracking-[0.3em] text-primary">MÓDULO {String(open + 1).padStart(2, "0")}</p>
-          <h3 className="mt-2 font-display text-3xl font-bold">{SCIENCE[open].title}</h3>
-          <p className="mt-4 text-lg leading-relaxed text-muted-foreground">{SCIENCE[open].text}</p>
+          <h3 className="mt-2 font-display text-3xl font-bold">{SCIENCE[open]!.title}</h3>
+          <p className="mt-4 text-lg leading-relaxed text-muted-foreground">{SCIENCE[open]!.text}</p>
           <div className="mt-8 flex justify-between">
             <BtnGhost disabled={open === 0} onClick={() => setOpen(open - 1)} className="disabled:opacity-40"><ArrowLeft className="h-4 w-4" />Anterior</BtnGhost>
             <BtnGhost disabled={open === SCIENCE.length - 1} onClick={() => setOpen(open + 1)} className="disabled:opacity-40">Próximo<ArrowRight className="h-4 w-4" /></BtnGhost>
@@ -396,7 +396,7 @@ function Play({ run, setRun, onFinish }: { run: Run; setRun: (r: Run) => void; o
   );
 }
 
-function Result({ run, onMap, onRetry, onNext, onRanking, onRestart }: { run: Run; onMap: () => void; onRetry: () => void; onNext?: () => void; onRanking: () => void; onRestart: () => void }) {
+function Result({ run, onMap, onRetry, onNext, onRanking, onRestart }: { run: Run; onMap: () => void; onRetry: () => void; onNext?: (() => void) | undefined; onRanking: () => void; onRestart: () => void }) {
   const total = run.phase.questions.length;
   const medal = run.failed ? null : medalFor(run.correct, total);
   const acc = Math.round((run.correct / total) * 100);
