@@ -1,11 +1,15 @@
 let ctx: AudioContext | null = null;
 const KEY = "wm_muted";
-export const isMuted = () => typeof window !== "undefined" && localStorage.getItem(KEY) === "1";
-export const setMuted = (m: boolean) => localStorage.setItem(KEY, m ? "1" : "0");
+export const isMuted = () => { try { return typeof window !== "undefined" && localStorage.getItem(KEY) === "1"; } catch { return false; } };
+export const setMuted = (m: boolean) => { try { localStorage.setItem(KEY, m ? "1" : "0"); } catch { /* ignore */ } };
 
 function tone(freq: number, dur: number, delay = 0, type: OscillatorType = "sine", vol = 0.06) {
-  if (typeof window === "undefined" || isMuted()) return;
-  ctx ??= new AudioContext();
+  try {
+    if (typeof window === "undefined" || isMuted()) return;
+    const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AC) return;
+    ctx ??= new AC();
+    if (ctx.state === "suspended") void ctx.resume().catch(() => {});
   const t = ctx.currentTime + delay;
   const o = ctx.createOscillator(), g = ctx.createGain();
   o.type = type; o.frequency.value = freq;
@@ -14,6 +18,9 @@ function tone(freq: number, dur: number, delay = 0, type: OscillatorType = "sine
   g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
   o.connect(g).connect(ctx.destination);
   o.start(t); o.stop(t + dur + 0.02);
+  } catch {
+    /* sound is optional — never block the game */
+  }
 }
 
 export const sfx = {

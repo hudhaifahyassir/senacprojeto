@@ -41,7 +41,7 @@ function read<T>(k: string, d: T): T {
     return d;
   }
 }
-const write = (k: string, v: unknown) => localStorage.setItem(k, JSON.stringify(v));
+const write = (k: string, v: unknown) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* storage blocked */ } };
 
 export const store = {
   best: () => read<number>(K.best, 0),
@@ -53,5 +53,5 @@ export const store = {
   rank: () => read<RankEntry[]>(K.rank, []),
   addRank: (e: RankEntry) =>
     write(K.rank, [...store.rank(), e].sort((a, b) => b.score - a.score).slice(0, 20)),
-  reset: () => Object.values(K).forEach((k) => localStorage.removeItem(k)),
+  reset: () => { try { Object.values(K).forEach((k) => localStorage.removeItem(k)); } catch { /* ignore */ } },
 };
