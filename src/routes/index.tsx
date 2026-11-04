@@ -44,12 +44,12 @@ function Game() {
 
   const refresh = () => {
     setBest(store.best()); setXp(store.xp()); setProgress(store.progress()); setRank(store.rank());
-    setName(localStorage.getItem("wm_name") ?? ""); setMute(isMuted());
+    try { setName(localStorage.getItem("wm_name") ?? ""); } catch { /* ignore */ } setMute(isMuted());
   };
   useEffect(refresh, []);
   useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); }, [screen, run?.idx]);
 
-  const go = (s: Screen) => { sfx.click(); setScreen(s); };
+  const go = (s: Screen) => { setScreen(s); sfx.click(); };
   const toggleMute = () => { setMuted(!muted); setMute(!muted); if (muted) sfx.click(); };
 
   const startPhase = (p: Phase) => {
@@ -96,7 +96,7 @@ function Game() {
           <TopBar xp={xp} best={best} session={session} muted={muted} onMute={toggleMute} onHome={() => go("menu")} />
         )}
         <div key={screen + (run?.idx ?? "")} className="animate-rise">
-          {screen === "menu" && <Menu best={best} xp={xp} name={name} muted={muted} onMute={toggleMute} topRank={rank[0]} setName={(n) => { setName(n); localStorage.setItem("wm_name", n); }} go={go} />}
+          {screen === "menu" && <Menu best={best} xp={xp} name={name} muted={muted} onMute={toggleMute} topRank={rank[0]} setName={(n) => { setName(n); try { localStorage.setItem("wm_name", n); } catch { /* ignore */ } }} go={go} />}
           {screen === "howto" && <HowTo back={() => go("menu")} />}
           {screen === "science" && <Science back={() => go("menu")} />}
           {screen === "ranking" && <Ranking rank={rank} back={() => go("menu")} onReset={() => { store.reset(); setSession(0); refresh(); }} />}
