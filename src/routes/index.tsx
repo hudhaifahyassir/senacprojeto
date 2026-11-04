@@ -293,7 +293,7 @@ function Briefing({ phase, onStart, back }: { phase: Phase; onStart: () => void;
 }
 
 function Play({ run, setRun, onFinish }: { run: Run; setRun: (r: Run) => void; onFinish: (r: Run) => void }) {
-  const q = run.phase.questions[run.idx];
+  const q = run.phase.questions[run.idx]!;
   const [time, setTime] = useState(QUESTION_TIME);
   const [picked, setPicked] = useState<number | null>(null);
   const [gain, setGain] = useState(0);
